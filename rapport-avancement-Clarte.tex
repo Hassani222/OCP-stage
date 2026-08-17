@@ -1,0 +1,292 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{times}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+\definecolor{clartegreen}{RGB}{85,86,63}
+
+\titleformat{\section}{\normalfont\Large\bfseries\color{clartegreen}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{0.6em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\slshape Rapport d'avancement — Clarté}
+\fancyfoot[C]{\thepage}
+
+\newcommand{\note}[1]{\textit{[#1]}}
+
+\title{\textbf{Rapport d'avancement — Clarté}\\[0.3cm]
+\Large Chatbot intelligent RAG pour l'exploitation de documents d'entreprise}
+\author{\note{Prénom NOM}}
+\date{\note{à compléter}}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+\tableofcontents
+\vspace{1cm}
+
+% =========================================================
+\section{Cahier des charges}
+
+\subsection{Contexte}
+Les collaborateurs de l'entreprise doivent aujourd'hui consulter manuellement des documents internes (politiques RH, procédures, notes de service) pour trouver une information précise. Cette recherche, effectuée par mots-clés ou par lecture intégrale des documents, est lente et ne garantit pas la pertinence du résultat.
+
+\subsection{Objectif du projet}
+Concevoir et développer \textbf{Clarté}, une application web de type chatbot permettant à un utilisateur d'interroger en langage naturel un ensemble de documents d'entreprise qu'il a lui-même importés, et d'obtenir une réponse synthétique, fiable et systématiquement accompagnée de sa source documentaire.
+
+\subsection{Périmètre fonctionnel}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+\textbf{\#} & \textbf{Fonctionnalité} \\
+\hline
+1 & Authentification des utilisateurs (inscription, connexion, session sécurisée) \\
+2 & Import et gestion de documents (PDF, DOCX, TXT) \\
+3 & Extraction, découpage et indexation sémantique des documents \\
+4 & Recherche sémantique en langage naturel \\
+5 & Génération de réponses par un modèle de langage (LLM), avec sources \\
+6 & Historique des conversations \\
+7 & Tableau de bord administrateur (statistiques + gestion des comptes) \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Contraintes}
+\begin{itemize}
+  \item \textbf{Confidentialité} : les documents et questions des utilisateurs ne doivent jamais quitter l'infrastructure de l'entreprise (pas d'appel à une API LLM externe).
+  \item \textbf{Isolation des données} : un utilisateur ne doit avoir accès qu'à ses propres documents.
+  \item \textbf{Séparation des rôles} : l'espace administrateur doit être strictement séparé de l'espace utilisateur standard.
+  \item \textbf{Performance} : le temps de réponse doit rester acceptable malgré l'exécution locale du modèle de langage (pas de GPU dédié dans l'environnement actuel).
+\end{itemize}
+
+\subsection{Acteurs}
+\begin{itemize}
+  \item \textbf{Utilisateur} : importe des documents, pose des questions, consulte son historique.
+  \item \textbf{Administrateur} : supervise l'usage de la plateforme et gère les comptes utilisateurs, sans accéder à l'espace de chat.
+\end{itemize}
+
+% =========================================================
+\section{Étude de besoin}
+
+\subsection{Besoins fonctionnels}
+
+\textbf{Authentification}
+\begin{itemize}
+  \item Inscription par email/mot de passe, mot de passe haché (jamais stocké en clair).
+  \item Connexion avec émission d'un jeton d'authentification (JWT) à durée de vie configurable.
+\end{itemize}
+
+\textbf{Documents}
+\begin{itemize}
+  \item Import de fichiers PDF, DOCX, TXT, avec une taille maximale de 5 Mo par document.
+  \item Liste et suppression des documents importés par l'utilisateur.
+\end{itemize}
+
+\textbf{Indexation}
+\begin{itemize}
+  \item Découpage automatique du texte extrait en segments (chunks) de taille configurable, avec chevauchement.
+  \item Génération d'un vecteur d'embedding par segment et stockage dans une base vectorielle.
+  \item Conservation, pour chaque segment, d'une référence à son document source.
+\end{itemize}
+
+\textbf{Recherche et génération}
+\begin{itemize}
+  \item Recherche sémantique des passages les plus pertinents par rapport à une question.
+  \item Génération d'une réponse par un LLM, strictement fondée sur les passages récupérés (pas d'invention en l'absence d'information pertinente).
+  \item Affichage progressif de la réponse au fur et à mesure de sa génération (streaming).
+  \item Génération d'un rapport téléchargeable (question, réponse, source) par échange.
+\end{itemize}
+
+\textbf{Historique}
+\begin{itemize}
+  \item Sauvegarde de chaque échange (question, réponse, sources), regroupé par conversation.
+  \item Consultation, reprise et suppression d'une conversation.
+\end{itemize}
+
+\textbf{Administration}
+\begin{itemize}
+  \item Tableau de bord présentant des statistiques globales d'usage (utilisateurs, documents, segments indexés, conversations, messages, volume de stockage).
+  \item Gestion complète des comptes utilisateurs (création, modification du rôle et du mot de passe, suppression), avec garde-fous empêchant un administrateur de se retirer ses propres droits ou de supprimer son propre compte.
+\end{itemize}
+
+\subsection{Besoins non fonctionnels}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Besoin} & \textbf{Détail} \\
+\hline
+Confidentialité & Modèle de langage exécuté localement (Ollama) ; aucune donnée transmise à un service tiers \\
+Isolation & Filtrage systématique des documents et résultats de recherche par identifiant de propriétaire \\
+Sécurité & Mots de passe hachés (bcrypt), jetons signés (JWT), séparation stricte des privilèges \\
+Performance perçue & Réponses affichées en streaming ; génération plafonnée en nombre de tokens \\
+Ergonomie & Interface claire, cohérente, accessible au clavier \\
+Portabilité & Application web, aucune installation cliente requise \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Principaux cas d'usage}
+\begin{enumerate}
+  \item Un utilisateur importe une politique RH puis demande \textit{« Combien de jours de congés payés par an ? »} et obtient une réponse exacte avec la source citée.
+  \item Un utilisateur consulte directement les passages pertinents d'un document via la page de recherche, sans passer par le chat.
+  \item Un administrateur consulte le tableau de bord pour suivre l'adoption de l'outil et gérer les comptes.
+\end{enumerate}
+
+% =========================================================
+\section{Choix techniques}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|l|p{6.5cm}|}
+\hline
+\textbf{Composant} & \textbf{Technologie} & \textbf{Justification} \\
+\hline
+Backend / API & FastAPI (Python) & Framework asynchrone performant, typage fort, documentation interactive générée automatiquement (Swagger) \\
+Orchestration RAG & LangChain & Abstractions standardisées pour le chargement, le découpage et l'appel au LLM ; large intégration avec Ollama et ChromaDB \\
+Base vectorielle & ChromaDB & Base vectorielle légère, embarquée, sans infrastructure serveur dédiée \\
+Embeddings & Sentence-Transformers (\texttt{all-MiniLM-L6-v2}) & Modèle open source léger, rapide en inférence CPU, bonnes performances en français \\
+LLM & Ollama + Llama 3 & Exécution 100\% locale : critère décisif de confidentialité vis-à-vis des documents d'entreprise \\
+Base relationnelle & SQLite (SQLAlchemy) & Suffisante pour le volume actuel ; migration vers PostgreSQL possible sans changement de code \\
+Authentification & JWT + bcrypt & Standard de l'industrie pour l'authentification API sans état et le hachage de mots de passe \\
+Frontend & React (Vite) & Écosystème mature, rendu réactif adapté à l'affichage en streaming \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Alternative écartée} : l'utilisation d'une API LLM externe (OpenAI, Anthropic, etc.) a été écartée malgré une qualité de réponse potentiellement supérieure, car elle impliquerait la transmission de documents internes de l'entreprise à un service tiers — incompatible avec la contrainte de confidentialité du cahier des charges.
+
+% =========================================================
+\section{Conception}
+
+\subsection{Architecture RAG}
+Le pipeline RAG se déroule en deux phases distinctes.
+
+\textbf{Phase d'indexation (à l'import d'un document)}
+\begin{verbatim}
+Document (PDF/DOCX/TXT)
+   -> extraction du texte
+   -> decoupage en segments (chunks)
+   -> generation des embeddings (Sentence-Transformers)
+   -> stockage dans ChromaDB (metadonnees : proprietaire, document d'origine)
+\end{verbatim}
+
+\textbf{Phase de question/réponse (à chaque question posée)}
+\begin{verbatim}
+Question utilisateur
+   -> embedding de la question
+   -> recherche des k segments les plus proches dans ChromaDB (filtres par proprietaire)
+   -> construction du contexte (segments + question)
+   -> generation de la reponse par le LLM (Ollama / Llama 3), en flux (streaming)
+   -> reponse affichee progressivement, sources deja connues et affichees immediatement
+   -> sauvegarde de l'echange dans l'historique
+\end{verbatim}
+
+\textbf{Schéma d'architecture logicielle}
+
+\begin{verbatim}
++--------------+   REST + streaming HTTP   +-------------------+
+|   Frontend   | ------------------------> |      Backend       |
+| React + Vite | <------------------------ |      FastAPI       |
++--------------+                            +---------+----------+
+                                                        |
+                    +-----------------------------------+-----------------------------------+
+                    v                                    v                                    v
+          +-------------------+              +----------------------+              +--------------------+
+          | SQLite (SQLAlchemy) |            |  ChromaDB (vecteurs)   |            |  Ollama (Llama 3)    |
+          | utilisateurs,        |            |  embeddings des        |            |  generation de        |
+          | documents,            |            |  segments de           |            |  reponses en local    |
+          | conversations          |            |  documents              |            |                      |
+          +-------------------+              +----------------------+              +--------------------+
+\end{verbatim}
+
+\textbf{Isolation multi-utilisateur} : chaque segment indexé dans ChromaDB porte l'identifiant du propriétaire du document en métadonnée. Toute recherche (recherche autonome ou retrieval pour le chat) applique systématiquement un filtre sur cet identifiant, garantissant qu'un utilisateur ne peut jamais recevoir de résultat provenant des documents d'un autre utilisateur.
+
+\subsection{Interface utilisateur}
+L'application est structurée en deux espaces visuellement et fonctionnellement distincts.
+
+\textbf{Espace utilisateur}
+\begin{itemize}
+  \item \textit{Page d'accueil} : présentation publique de l'application, accès à la connexion/inscription.
+  \item \textit{Chat} : conversation avec l'assistant, réponses affichées en flux (effet de frappe), historique des conversations en barre latérale, import de documents, téléchargement d'un rapport par réponse.
+  \item \textit{Recherche} : interrogation directe de la base documentaire, indépendamment du chat, avec affichage des passages pertinents et de leur source.
+\end{itemize}
+
+\textbf{Espace administrateur}
+\begin{itemize}
+  \item \textit{Tableau de bord} : bandeau supérieur dédié (visuellement distinct de l'espace utilisateur), indicateurs agrégés et table de gestion des comptes. Un compte administrateur est automatiquement redirigé vers cet espace et n'a pas accès à l'interface de chat.
+\end{itemize}
+
+% =========================================================
+\section{Réalisation}
+
+\subsection{État d'avancement}
+L'ensemble du périmètre fonctionnel décrit dans le cahier des charges est \textbf{implémenté et fonctionnel de bout en bout} :
+
+\begin{itemize}[label=\checkmark]
+  \item Authentification (inscription, connexion, JWT)
+  \item Import, extraction, découpage et indexation des documents
+  \item Recherche sémantique autonome
+  \item Génération de réponses RAG avec streaming et sources
+  \item Historique des conversations
+  \item Tableau de bord administrateur avec gestion complète des utilisateurs (CRUD)
+  \item Séparation stricte des espaces utilisateur/administrateur
+  \item Téléchargement de rapport par réponse
+  \item Évaluation quantitative du pipeline RAG (harnais de test reproductible)
+\end{itemize}
+
+\subsection{Résultats de l'évaluation quantitative}
+Un harnais d'évaluation automatisé (\texttt{backend/eval/run\_evaluation.py}) mesure la qualité du système sur un jeu de test de 10 questions portant sur 2 documents :
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Métrique} & \textbf{Résultat} \\
+\hline
+Hit Rate@k (pertinence du retrieval) & 100 \% \\
+MRR (Mean Reciprocal Rank) & 1,000 \\
+Exactitude des réponses générées & 100 \% \\
+Sources citées correctes & 100 \% \\
+Latence moyenne de génération (CPU) & $\approx$ 40 s \\
+\hline
+\end{tabular}
+\end{table}
+
+\textit{Ces résultats, obtenus sur un jeu de test volontairement restreint, attestent de la faisabilité de l'approche ; un élargissement du corpus de test est prévu pour consolider ces mesures.}
+
+\subsection{Prochaines étapes envisagées}
+\begin{itemize}
+  \item Élargissement du jeu d'évaluation à un corpus documentaire plus large.
+  \item Mise en place de tests automatisés (unitaires/intégration).
+  \item Conteneurisation (Docker) pour faciliter le déploiement.
+  \item Fonctionnalité de récupération de mot de passe en libre-service.
+\end{itemize}
+
+\vspace{0.5cm}
+\noindent\textit{Les prérequis techniques et le mode opératoire détaillé de déploiement font l'objet d'un document séparé : \texttt{GUIDE-DEPLOIEMENT.md}.}
+
+\end{document}
