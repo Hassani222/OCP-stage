@@ -1,0 +1,612 @@
+\documentclass[12pt,a4paper]{report}
+
+% ===== Mise en page conforme à l'ANNEXE B du guide (marges 2.5cm, Times 12pt, interligne 1.5) =====
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{times}
+\usepackage{setspace}
+\onehalfspacing % interligne 1.5
+
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\definecolor{ocpred}{RGB}{200,16,46}
+
+% ===== Numérotation en chiffres arabes, débute à l'introduction générale =====
+\pagenumbering{arabic}
+
+% ===== En-tête / pied de page =====
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\slshape \leftmark}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\slshape Clarté — Rapport de PFA}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+% ===== Style des titres de chapitre =====
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\Large}
+  {\filright\Large\textcolor{ocpred}{Chapitre} \Huge\thechapter}
+  {10pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+
+\newcommand{\note}[1]{\textit{[#1]}}
+
+\begin{document}
+
+% =========================================================
+% PAGE DE GARDE
+% =========================================================
+\begin{titlepage}
+\begin{flushleft}
+\textbf{\Large PROJET DE FIN D'ANNÉE}\\
+\textit{4ème Année en Ingénierie Informatique et Réseaux}
+\end{flushleft}
+
+\vspace{2cm}
+\begin{center}
+{\Huge\bfseries Titre du Rapport de stage}\\[0.3cm]
+{\Large Clarté — Conception et développement d'un chatbot intelligent basé sur les techniques\\
+Retrieval-Augmented Generation (RAG) pour l'exploitation de documents d'entreprise}
+\end{center}
+
+\vspace{3cm}
+\noindent\textbf{Réalisé par :} \note{Prénom NOM}
+
+\vspace{1cm}
+\noindent\textbf{Tuteur(s) :}
+\begin{itemize}[leftmargin=2cm]
+  \item[] Encadrant Professionnel : \note{Prénom NOM}
+  \item[] Encadrant Pédagogique : \note{Prénom NOM}
+\end{itemize}
+
+\vspace{1cm}
+\noindent\textbf{Au sein de (Organisme d'accueil) :} OCP Group (Office Chérifien des Phosphates)
+
+\vfill
+\begin{center}
+\textbf{Année universitaire : \note{20xx/20xx}}
+\end{center}
+\end{titlepage}
+
+% =========================================================
+% DÉDICACES
+% =========================================================
+\chapter*{Dédicaces}
+\addcontentsline{toc}{chapter}{Dédicaces}
+\note{Section personnelle — à rédiger par l'étudiant. Généralement dédiée aux membres de la famille et aux proches ayant apporté un soutien moral durant l'année. La mise en forme de cette page est personnelle à l'étudiant.}
+
+% =========================================================
+% REMERCIEMENTS
+% =========================================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+\note{Section personnelle — à rédiger par l'étudiant en une dizaine de lignes maximum, citant nommément l'encadrant professionnel, l'encadrant pédagogique, et toute personne ayant contribué au bon déroulement du projet. Attention : les remerciements ne sont pas adressés aux membres du jury.}
+
+% =========================================================
+% TABLE DES MATIÈRES / FIGURES / TABLEAUX
+% =========================================================
+\tableofcontents
+\listoffigures
+\listoftables
+
+% =========================================================
+% INTRODUCTION GÉNÉRALE
+% =========================================================
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+\markboth{Introduction générale}{Introduction générale}
+
+Dans un contexte où les entreprises accumulent chaque année un volume croissant de documents internes — politiques RH, procédures, comptes rendus, notes de service — l'accès rapide et fiable à l'information qu'ils contiennent devient un enjeu opérationnel majeur. La recherche par mots-clés classique montre ses limites dès que la question posée ne correspond pas exactement au vocabulaire du document, et la lecture manuelle de longs fichiers pour retrouver une information ponctuelle représente une perte de temps considérable pour les collaborateurs.
+
+C'est dans cette optique que s'inscrit notre projet de fin d'année, réalisé au sein de l'OCP Group, dont l'objectif est de concevoir et développer \textbf{Clarté}, un chatbot intelligent d'entreprise fondé sur les techniques de \textbf{Retrieval-Augmented Generation (RAG)}. Cette approche combine la recherche sémantique — pour retrouver, parmi des documents internes, les passages les plus pertinents par rapport à une question posée en langage naturel — et la génération de texte par un grand modèle de langage (LLM), afin de produire une réponse claire, contextualisée et systématiquement appuyée sur des sources vérifiables.
+
+La problématique à laquelle ce projet répond peut se formuler ainsi : \textit{comment permettre à un collaborateur d'obtenir, en langage naturel et en quelques secondes, une réponse fiable et sourcée à partir des documents internes de l'entreprise, sans dépendre d'un service externe qui exposerait des données sensibles hors de l'organisation ?}
+
+Le présent rapport est structuré en quatre chapitres. Le premier chapitre présente le cadre général du projet : l'organisme d'accueil, l'étude de l'existant et la solution envisagée. Le deuxième chapitre détaille la spécification des besoins fonctionnels et non fonctionnels ainsi que les cas d'utilisation. Le troisième chapitre expose la conception du système, tant du point de vue dynamique que statique. Enfin, le quatrième chapitre décrit la réalisation concrète de l'application, l'environnement de développement utilisé et les principales interfaces graphiques obtenues.
+
+% =========================================================
+% CHAPITRE 1
+% =========================================================
+\chapter{Présentation du cadre de projet}
+
+\section{Introduction}
+Ce chapitre a pour objectif de situer le projet dans son contexte. Il présente successivement l'organisme d'accueil, une étude de l'existant en matière de gestion et de consultation des documents internes, la critique de cet existant, la solution proposée, le modèle de développement retenu ainsi que le planning prévisionnel suivi durant la période du stage.
+
+\section{Présentation de l'OCP}
+\note{Section à personnaliser avec les informations exactes du site/département d'accueil. Éléments de cadrage général fournis à titre de base :}
+
+L'\textbf{OCP Group} (Office Chérifien des Phosphates) est une entreprise marocaine fondée en 1920, leader mondial sur le marché des phosphates et de leurs dérivés (engrais notamment). Le groupe est présent sur l'ensemble de la chaîne de valeur, de l'extraction du phosphate brut dans ses sites miniers (Khouribga, Benguerir, Youssoufia) jusqu'à la transformation industrielle dans ses complexes chimiques (Jorf Lasfar, Safi), et exporte ses produits vers de nombreux marchés internationaux. Le groupe emploie plusieurs dizaines de milliers de collaborateurs et occupe une place stratégique dans l'économie marocaine.
+
+\note{À compléter : direction/département d'accueil précis, effectif de l'équipe, outils informatiques déjà en place dans ce service, organigramme simplifié.}
+
+\textbf{Attention} : cette section ne doit pas prendre la forme d'une communication institutionnelle ; elle doit rester factuelle et se concentrer, en particulier, sur le département d'accueil et les outils numériques qui y sont utilisés.
+
+\section{Étude de l'existant}
+
+\subsection{Description de l'existant}
+Au sein de l'organisme d'accueil, la consultation des documents internes (politiques, procédures, notes de service) repose aujourd'hui sur des méthodes classiques : partages réseau, arborescences de dossiers, ou moteurs de recherche interne limités à la recherche par mots-clés exacts. Un collaborateur souhaitant connaître, par exemple, le nombre de jours de congé maladie ou les modalités de télétravail doit localiser manuellement le document concerné puis le parcourir intégralement pour trouver l'information recherchée.
+
+\subsection{Critique de l'existant}
+Cette approche présente plusieurs limites :
+\begin{itemize}
+  \item \textbf{Recherche par mots-clés stricts} : une question formulée différemment du vocabulaire exact du document ne renvoie aucun résultat pertinent.
+  \item \textbf{Absence de synthèse} : l'utilisateur doit lire et interpréter lui-même le document, sans réponse directe à sa question.
+  \item \textbf{Perte de temps} : la recherche manuelle d'une information ponctuelle dans un document long est chronophage.
+  \item \textbf{Aucune traçabilité de la source} : lorsqu'une réponse est obtenue par un collègue ou par une recherche informelle, l'origine exacte de l'information n'est pas toujours vérifiable.
+  \item \textbf{Silos documentaires} : chaque utilisateur ne dispose pas nécessairement d'une vue consolidée de l'ensemble des documents pertinents à son besoin.
+\end{itemize}
+
+\subsection{Solution proposée}
+Pour répondre à ces limites, nous proposons \textbf{Clarté}, une application web permettant :
+\begin{itemize}
+  \item l'import de documents d'entreprise (PDF, DOCX, TXT) ;
+  \item leur découpage automatique en segments (chunks) et leur indexation sémantique dans une base vectorielle ;
+  \item l'interrogation en langage naturel, via un chatbot, avec génération de réponses \textbf{exclusivement fondées sur le contenu des documents importés} ;
+  \item l'affichage systématique des sources ayant permis de générer chaque réponse ;
+  \item une recherche sémantique autonome, indépendante du chat, pour consulter directement les passages pertinents ;
+  \item un tableau de bord administrateur pour le suivi de l'usage et la gestion des comptes utilisateurs.
+\end{itemize}
+
+Un point de conception essentiel distingue ce projet des solutions RAG s'appuyant sur des API LLM externes (OpenAI, Anthropic, etc.) : Clarté utilise un \textbf{modèle de langage exécuté localement} (via Ollama), garantissant qu'aucun document d'entreprise n'est transmis à un service tiers — un critère déterminant dans un contexte industriel où la confidentialité des données est stratégique.
+
+\section{Choix du modèle de développement}
+Le projet a été mené selon une démarche \textbf{itérative et incrémentale}, proche des principes agiles : chaque fonctionnalité (authentification, import de documents, recherche sémantique, génération de réponses, historique, tableau de bord administrateur, streaming des réponses, etc.) a été spécifiée, développée, testée puis validée indépendamment avant l'intégration de la fonctionnalité suivante. Cette approche a permis d'obtenir, dès les premières itérations, une application fonctionnelle de bout en bout, puis de l'enrichir progressivement — ce qui est particulièrement adapté à un projet dont le périmètre s'est précisé au fil de l'avancement, plutôt qu'entièrement figé en amont.
+
+\section{Planning prévisionnel}
+
+\begin{table}[h]
+\centering
+\caption{Planning prévisionnel}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Étape} & \textbf{S1-2} & \textbf{S3-4} & \textbf{S5-6} & \textbf{S7-8} \\
+\hline
+Étude préalable et spécification des besoins & \checkmark & & & \\
+\hline
+Conception (architecture, modélisation) & \checkmark & \checkmark & & \\
+\hline
+Réalisation — socle (auth, import, RAG de base) & & \checkmark & \checkmark & \\
+\hline
+Réalisation — fonctionnalités avancées & & & \checkmark & \checkmark \\
+\hline
+Tests, évaluation et rédaction du rapport & & & & \checkmark \\
+\hline
+\end{tabular}
+\end{table}
+\note{À ajuster avec les dates réelles du stage.}
+
+\section{Conclusion}
+Ce chapitre a permis de situer le projet dans son contexte organisationnel, d'identifier les limites de la gestion documentaire actuelle et de poser les bases de la solution retenue. Le chapitre suivant détaille la spécification des besoins fonctionnels et non fonctionnels de l'application Clarté.
+
+% =========================================================
+% CHAPITRE 2
+% =========================================================
+\chapter{Spécification des besoins}
+
+\section{Introduction}
+Ce chapitre présente les besoins fonctionnels et non fonctionnels auxquels doit répondre l'application, ainsi que les principaux cas d'utilisation identifiés.
+
+\section{Spécification des besoins fonctionnels}
+
+\subsection{Authentification et gestion des comptes}
+\begin{enumerate}
+  \item Un utilisateur peut créer un compte (email + mot de passe).
+  \item Un utilisateur peut se connecter et obtient un jeton d'authentification (JWT) valable pour une durée configurable.
+  \item Chaque requête protégée vérifie ce jeton sans jamais retransmettre le mot de passe.
+\end{enumerate}
+
+\subsection{Import et gestion des documents}
+\begin{enumerate}
+  \item Un utilisateur peut importer un document au format PDF, DOCX ou TXT.
+  \item La taille de chaque document est limitée (5 Mo) afin de préserver les performances d'indexation.
+  \item Un utilisateur peut consulter la liste de ses documents et en supprimer un, ce qui supprime également ses données vectorielles associées.
+\end{enumerate}
+
+\subsection{Extraction et indexation des documents}
+\begin{enumerate}
+  \item Le texte de chaque document est extrait puis découpé en segments (chunks) de taille configurable.
+  \item Chaque segment est converti en vecteur numérique (embedding) et stocké dans une base vectorielle.
+  \item Chaque segment conserve une référence à son document d'origine (nom de fichier, identifiant).
+\end{enumerate}
+
+\subsection{Recherche sémantique}
+\begin{enumerate}
+  \item Un utilisateur peut interroger directement la base documentaire (page « Recherche »), indépendamment du chat, et obtenir les passages les plus pertinents.
+  \item La recherche est strictement limitée aux documents appartenant à l'utilisateur connecté.
+\end{enumerate}
+
+\subsection{Génération de réponses (chat RAG)}
+\begin{enumerate}
+  \item Un utilisateur peut poser une question en langage naturel.
+  \item Le système récupère les passages les plus pertinents et les transmet, avec la question, à un modèle de langage local.
+  \item La réponse générée s'appuie exclusivement sur le contenu récupéré ; si aucune information pertinente n'est trouvée, le système l'indique explicitement plutôt que d'inventer une réponse.
+  \item La réponse est affichée progressivement (streaming) au fur et à mesure de sa génération, afin de réduire le temps d'attente perçu.
+  \item Un utilisateur peut télécharger un rapport (question, réponse, source) pour chaque échange.
+\end{enumerate}
+
+\subsection{Historique des conversations}
+\begin{enumerate}
+  \item Chaque échange (question, réponse, sources) est sauvegardé et rattaché à une conversation et à un utilisateur.
+  \item Un utilisateur peut consulter, reprendre ou supprimer une conversation existante.
+\end{enumerate}
+
+\subsection{Administration}
+\begin{enumerate}
+  \item Un compte administrateur dispose d'un tableau de bord dédié, distinct de l'espace utilisateur standard, présentant des statistiques globales (nombre d'utilisateurs, de documents, de segments indexés, de conversations, de messages, volume de stockage).
+  \item L'administrateur peut créer, modifier (email, rôle, mot de passe) et supprimer un compte utilisateur.
+  \item Un utilisateur non-administrateur n'a accès à aucune fonctionnalité d'administration.
+\end{enumerate}
+
+\section{Spécification des besoins non fonctionnels}
+\begin{itemize}
+  \item \textbf{Confidentialité} : aucun document ni aucune question posée par un utilisateur n'est transmis à un service tiers ; le modèle de langage est exécuté localement.
+  \item \textbf{Isolation des données} : un utilisateur ne peut consulter, rechercher ou interroger que ses propres documents (filtrage systématique par identifiant de propriétaire au niveau de la base vectorielle).
+  \item \textbf{Performance} : la génération de réponse est plafonnée en nombre de tokens et le retrieval est limité à un nombre configurable de passages, afin de contenir le temps de réponse ; l'affichage en streaming améliore la réactivité perçue.
+  \item \textbf{Sécurité} : mots de passe hachés (bcrypt), authentification par jeton signé (JWT), séparation stricte des privilèges administrateur/utilisateur avec garde-fous.
+  \item \textbf{Ergonomie} : interface claire, cohérente visuellement, accessible (contrastes, focus clavier).
+  \item \textbf{Portabilité} : application web utilisable depuis n'importe quel navigateur moderne, sans installation cliente.
+\end{itemize}
+
+\section{Présentation des cas d'utilisation}
+
+\subsection{Présentation des acteurs}
+\begin{itemize}
+  \item \textbf{Utilisateur} : collaborateur de l'entreprise. Peut s'inscrire, se connecter, importer des documents, poser des questions, consulter son historique, effectuer des recherches sémantiques et télécharger des rapports.
+  \item \textbf{Administrateur} : rôle attribué à certains comptes (via une liste d'emails autorisés). Accède exclusivement au tableau de bord d'administration ; n'utilise pas l'espace de chat.
+\end{itemize}
+
+\subsection{Description des cas d'utilisation}
+
+\begin{table}[h]
+\centering
+\caption{Description du cas d'utilisation « Poser une question » pour l'acteur Utilisateur}
+\begin{tabular}{|p{3.5cm}|p{9.5cm}|}
+\hline
+\textbf{Cas n°} & 1 \\
+\hline
+\textbf{Acteur(s)} & Utilisateur \\
+\hline
+\textbf{Objectif} & Obtenir une réponse fiable et sourcée à une question portant sur ses documents importés. \\
+\hline
+\textbf{Pré-condition(s)} & L'utilisateur est authentifié et a importé au moins un document. \\
+\hline
+\textbf{Post-condition(s)} & Une réponse est affichée, accompagnée des sources documentaires utilisées ; l'échange est sauvegardé dans l'historique. \\
+\hline
+\textbf{Scénario nominal} & 1. L'utilisateur saisit sa question. 2. Le système recherche les passages pertinents. 3. Le système transmet la question et le contexte au LLM. 4. La réponse est générée et affichée progressivement. 5. L'échange est enregistré. \\
+\hline
+\textbf{Scénario alternatif} & Si aucun passage pertinent n'est trouvé, le système informe l'utilisateur qu'aucune information n'est disponible plutôt que de générer une réponse. \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Description du cas d'utilisation « Gérer les utilisateurs » pour l'acteur Administrateur}
+\begin{tabular}{|p{3.5cm}|p{9.5cm}|}
+\hline
+\textbf{Cas n°} & 2 \\
+\hline
+\textbf{Acteur(s)} & Administrateur \\
+\hline
+\textbf{Objectif} & Créer, modifier ou supprimer un compte utilisateur depuis le tableau de bord. \\
+\hline
+\textbf{Pré-condition(s)} & L'administrateur est authentifié et reconnu comme tel par le système. \\
+\hline
+\textbf{Post-condition(s)} & Le compte est créé, mis à jour ou supprimé ; en cas de suppression, les documents et données vectorielles associés sont également supprimés. \\
+\hline
+\textbf{Scénario nominal} & 1. L'administrateur accède au tableau de bord. 2. Il consulte la liste des utilisateurs. 3. Il crée/modifie/supprime un compte. 4. Le tableau de bord est actualisé. \\
+\hline
+\textbf{Scénario alternatif} & Le système refuse toute tentative de l'administrateur de supprimer ou de retirer ses propres droits d'administration. \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Diagramme des cas d'utilisation global}
+\note{À insérer : diagramme UML représentant les deux acteurs (Utilisateur, Administrateur) et leurs cas d'utilisation respectifs, réalisé avec un outil tel que StarUML, Visual Paradigm ou draw.io.}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{10cm}{\centering \vspace{2cm} Diagramme de cas d'utilisation global \\ \note{à insérer} \vspace{2cm}}}
+\caption{Diagramme de cas d'utilisation global}
+\end{figure}
+
+% =========================================================
+% CHAPITRE 3
+% =========================================================
+\chapter{Conception du système}
+
+\section{Introduction}
+Ce chapitre présente la conception de l'application selon les deux points de vue complémentaires du langage UML : la modélisation dynamique, qui décrit le comportement du système au fil du temps, et la modélisation statique, qui décrit sa structure de données et son architecture.
+
+\section{Modélisation dynamique}
+
+\subsection{Diagramme de séquence — Authentification}
+Le scénario d'authentification se déroule comme suit : l'utilisateur saisit son email et son mot de passe ; le frontend transmet ces informations au backend (\texttt{POST /auth/login}) ; le backend vérifie le mot de passe (comparaison avec le hash bcrypt stocké) puis, si la vérification réussit, génère un jeton JWT signé et le retourne. Ce jeton est ensuite joint à chaque requête ultérieure via l'en-tête \texttt{Authorization}, permettant au backend d'identifier l'utilisateur sans revalidation du mot de passe.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{10cm}{\centering \vspace{2cm} Diagramme de séquence — Authentification \\ \note{à réaliser sous UML2} \vspace{2cm}}}
+\caption{Diagramme de séquence — Authentification}
+\end{figure}
+
+\subsection{Diagramme de séquence — Question/réponse RAG}
+Ce scénario illustre le cœur fonctionnel de l'application :
+\begin{enumerate}
+  \item L'utilisateur envoie une question depuis l'interface de chat.
+  \item Le backend crée (ou réutilise) une conversation et enregistre le message utilisateur.
+  \item Le backend effectue une recherche sémantique (\texttt{similarity\_search}) dans ChromaDB, filtrée par l'identifiant du propriétaire, et récupère les $k$ passages les plus proches.
+  \item Les sources sont immédiatement connues à ce stade et transmises au frontend via les en-têtes de la réponse HTTP, avant même le début de la génération.
+  \item Le contexte et la question sont transmis au modèle de langage (Ollama / Llama 3), qui génère la réponse \textbf{token par token}.
+  \item Chaque fragment de texte généré est transmis immédiatement au frontend (streaming HTTP), qui l'affiche au fur et à mesure.
+  \item Une fois la génération terminée, la réponse complète est enregistrée dans l'historique avec ses sources.
+\end{enumerate}
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{10cm}{\centering \vspace{2cm} Diagramme de séquence — Question/réponse RAG \\ \note{à réaliser sous UML2} \vspace{2cm}}}
+\caption{Diagramme de séquence — Question/réponse RAG (avec streaming)}
+\end{figure}
+
+\subsection{Diagramme d'activité — Import et indexation d'un document}
+Le processus d'import se déroule selon l'enchaînement suivant : dépôt du fichier $\rightarrow$ vérification du format (PDF/DOCX/TXT) et de la taille ($\leq$ 5 Mo) $\rightarrow$ extraction du texte $\rightarrow$ découpage en segments $\rightarrow$ génération des embeddings $\rightarrow$ indexation dans ChromaDB avec métadonnées $\rightarrow$ mise à jour du nombre de segments en base relationnelle. En cas d'échec à une étape quelconque, le document et son fichier physique sont supprimés pour éviter tout état incohérent.
+
+\section{Modélisation statique}
+
+\subsection{Diagramme de classes}
+Le modèle de données relationnel s'articule autour de quatre entités principales :
+\begin{itemize}
+  \item \textbf{User} : représente un compte (utilisateur ou administrateur).
+  \item \textbf{Document} : représente un fichier importé par un utilisateur.
+  \item \textbf{Conversation} : regroupe une suite d'échanges entre un utilisateur et l'assistant.
+  \item \textbf{Message} : représente un échange individuel (question ou réponse) au sein d'une conversation.
+\end{itemize}
+
+Relations : un \texttt{User} possède plusieurs \texttt{Document} et plusieurs \texttt{Conversation} (relations 1,n) ; une \texttt{Conversation} contient plusieurs \texttt{Message} (relation 1,n). La suppression d'un utilisateur ou d'une conversation entraîne la suppression en cascade des entités qui lui sont rattachées.
+
+\begin{figure}[h]
+\centering
+\fbox{\parbox{10cm}{\centering \vspace{2cm} Diagramme de classes \\ \note{à réaliser} \vspace{2cm}}}
+\caption{Diagramme de classes}
+\end{figure}
+
+\subsection{Modèle relationnel}
+\begin{verbatim}
+User (id, email, hashed_password, is_admin, created_at)
+Document (id, owner_id#, filename, stored_path, chunk_count, uploaded_at)
+Conversation (id, owner_id#, title, created_at)
+Message (id, conversation_id#, role, content, sources, created_at)
+
+(# = clé étrangère)
+\end{verbatim}
+
+\subsection{Dictionnaire de données}
+
+\begin{table}[h]
+\centering
+\caption{Dictionnaire de données — table \texttt{users}}
+\begin{tabular}{|l|l|c|l|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Défaut} & \textbf{Clé} \\
+\hline
+id & Entier & Oui & auto-incrément & Primaire \\
+email & Texte & Oui & — & Unique \\
+hashed\_password & Texte & Oui & — & — \\
+is\_admin & Booléen & Oui & Faux & — \\
+created\_at & Date/heure & Non & horodatage courant & — \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Dictionnaire de données — table \texttt{documents}}
+\begin{tabular}{|l|l|c|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Clé} \\
+\hline
+id & Entier & Oui & Primaire \\
+owner\_id & Entier & Oui & Étrangère $\rightarrow$ users.id \\
+filename & Texte & Oui & — \\
+stored\_path & Texte & Oui & — \\
+chunk\_count & Entier & Non (déf. 0) & — \\
+uploaded\_at & Date/heure & Non & — \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Dictionnaire de données — table \texttt{conversations}}
+\begin{tabular}{|l|l|c|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Clé} \\
+\hline
+id & Entier & Oui & Primaire \\
+owner\_id & Entier & Oui & Étrangère $\rightarrow$ users.id \\
+title & Texte & Non & — \\
+created\_at & Date/heure & Non & — \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Dictionnaire de données — table \texttt{messages}}
+\begin{tabular}{|l|l|c|l|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Obligatoire} & \textbf{Clé} \\
+\hline
+id & Entier & Oui & Primaire \\
+conversation\_id & Entier & Oui & Étrangère $\rightarrow$ conversations.id \\
+role & Texte (« user »/« assistant ») & Oui & — \\
+content & Texte long & Oui & — \\
+sources & Texte (JSON) & Non & — \\
+created\_at & Date/heure & Non & — \\
+\hline
+\end{tabular}
+\end{table}
+
+\textit{(Les segments de documents et leurs vecteurs ne sont pas stockés dans la base relationnelle mais dans la base vectorielle ChromaDB, sous forme de collection indexée par métadonnées \texttt{owner\_id}, \texttt{document\_id} et \texttt{filename}.)}
+
+\subsection{Architecture de l'application}
+
+\subsubsection{Architecture logicielle}
+L'application suit une architecture \textbf{client-serveur découplée} :
+\begin{itemize}
+  \item \textbf{Frontend} : application monopage (SPA) développée en \textbf{React} (build via \textbf{Vite}), communiquant avec le backend par API REST et par flux HTTP (streaming) pour les réponses du chatbot.
+  \item \textbf{Backend} : API développée en \textbf{Python} avec le framework \textbf{FastAPI}, orchestrant l'authentification (JWT, bcrypt), le pipeline RAG via \textbf{LangChain}, la persistance relationnelle via \textbf{SQLAlchemy} (SQLite), la base vectorielle \textbf{ChromaDB}, et la génération de texte via \textbf{Ollama} (Llama 3, exécution locale).
+  \item \textbf{Séparation stricte des espaces} : l'interface utilisateur et l'interface d'administration constituent deux espaces visuellement et fonctionnellement distincts.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\begin{verbatim}
++--------------+     REST / streaming HTTP     +------------------+
+|   Frontend   | -----------------------------> |     Backend      |
+| React + Vite | <----------------------------- |    FastAPI       |
++--------------+                                 +--------+---------+
+                                                            |
+                        +-------------------------+---------+---------+-------------------------+
+                        v                                    v                                    v
+              +-------------------+              +----------------------+              +-------------------+
+              |  SQLite (SQLAlchemy)|            |  ChromaDB (vecteurs)   |            |  Ollama (Llama 3)   |
+              |  users, documents,   |            |  embeddings des        |            |  génération locale   |
+              |  conversations, msgs |            |  segments de documents |            |  de réponses         |
+              +-------------------+              +----------------------+              +-------------------+
+\end{verbatim}
+\caption{Architecture globale de l'application Clarté}
+\end{figure}
+
+\subsubsection{Architecture matérielle}
+L'application est déployée, dans le cadre du projet, sur un poste de travail unique exécutant l'ensemble des composants. Dans une perspective de déploiement en production, ces composants seraient répartis sur des nœuds distincts (serveur d'application, serveur de base de données, serveur d'inférence LLM avec accélération GPU), communiquant via le réseau interne de l'entreprise, sans exposition à internet, afin de préserver la confidentialité des documents traités.
+
+\section{Conclusion}
+Ce chapitre a présenté la conception du système, tant du point de vue de son comportement dynamique que de sa structure statique. Le chapitre suivant détaille la réalisation concrète de cette conception.
+
+% =========================================================
+% CHAPITRE 4
+% =========================================================
+\chapter{Réalisation du système}
+
+\section{Introduction}
+Ce chapitre présente l'environnement de développement utilisé pour la réalisation de Clarté ainsi que les principales interfaces graphiques obtenues.
+
+\section{Environnement de développement}
+
+\subsection{Environnement matériel}
+\note{À compléter avec les caractéristiques réelles du poste de développement : processeur, mémoire, système d'exploitation.} Le développement a été réalisé sur un poste sous Windows, sans accélération GPU dédiée, le modèle de langage étant exécuté en inférence CPU via Ollama.
+
+\subsection{Environnement logiciel}
+
+\begin{table}[h]
+\centering
+\caption{Environnement logiciel}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Composant} & \textbf{Technologie} \\
+\hline
+Langage backend & Python 3.13 \\
+Framework API & FastAPI \\
+Framework RAG & LangChain \\
+Base vectorielle & ChromaDB \\
+Modèle d'embeddings & Sentence Transformers (\texttt{all-MiniLM-L6-v2}) \\
+Modèle de langage (LLM) & Llama 3 (via Ollama, exécution locale) \\
+Base relationnelle & SQLite (via SQLAlchemy) \\
+Frontend & React 18 (Vite) \\
+Authentification & JWT (python-jose), bcrypt (passlib) \\
+Éditeur / outils & Visual Studio Code, Git \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Principales interfaces graphiques}
+\note{Les captures d'écran réelles de l'application doivent être insérées ici, chacune accompagnée d'un court paragraphe explicatif.}
+
+\begin{itemize}
+  \item \textbf{Page d'accueil} : page publique présentant l'application et ses fonctionnalités, avec accès à la connexion et à l'inscription.
+  \item \textbf{Connexion / Inscription} : formulaires d'authentification classiques, avec gestion des erreurs.
+  \item \textbf{Interface de chat} : zone de conversation avec l'assistant, réponses affichées progressivement (streaming), bouton de téléchargement du rapport de réponse, historique des conversations, import de documents.
+  \item \textbf{Page de recherche sémantique} : champ de recherche indépendant renvoyant directement les passages documentaires les plus pertinents.
+  \item \textbf{Tableau de bord administrateur} : espace visuellement distinct, indicateurs agrégés et gestion des comptes utilisateurs.
+\end{itemize}
+
+\section{Conclusion}
+La réalisation du projet a permis d'aboutir à une application fonctionnelle de bout en bout, couvrant l'ensemble du pipeline RAG ainsi que les fonctionnalités transverses attendues d'une application d'entreprise. Une évaluation quantitative a par ailleurs été menée pour objectiver la qualité du système.
+
+\begin{table}[h]
+\centering
+\caption{Résultats de l'évaluation quantitative du RAG}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Métrique} & \textbf{Résultat} \\
+\hline
+Hit Rate@k (retrieval) & 100 \% \\
+MRR (Mean Reciprocal Rank) & 1,000 \\
+Exactitude des réponses générées & 100 \% \\
+Sources citées correctes & 100 \% \\
+Latence moyenne de génération (CPU) & $\approx$ 40 s \\
+\hline
+\end{tabular}
+\end{table}
+
+\textit{Note méthodologique à faire figurer dans le rapport : ces résultats ont été obtenus sur un jeu de test volontairement restreint (10 questions, 2 documents), représentatif de la faisabilité du système plutôt que d'une garantie de performance à grande échelle ; un élargissement du jeu de test constitue une piste d'amélioration identifiée.}
+
+% =========================================================
+% CONCLUSION GÉNÉRALE
+% =========================================================
+\chapter*{Conclusion générale}
+\addcontentsline{toc}{chapter}{Conclusion générale}
+\markboth{Conclusion générale}{Conclusion générale}
+
+Ce projet de fin d'année a porté sur la conception et le développement de Clarté, un chatbot intelligent d'entreprise fondé sur les techniques de Retrieval-Augmented Generation. L'objectif initial — permettre à un collaborateur d'obtenir, en langage naturel, une réponse fiable et systématiquement sourcée à partir des documents internes de l'entreprise — a été atteint : l'application couvre l'ensemble de la chaîne fonctionnelle, de l'import et l'indexation des documents jusqu'à la génération de réponses en temps réel, en passant par la recherche sémantique autonome, l'historique des échanges et un espace d'administration dédié au suivi de l'usage.
+
+Sur le plan technique, ce projet a permis de mettre en œuvre concrètement une architecture RAG complète (extraction, découpage, embeddings, indexation vectorielle, retrieval, génération), tout en intégrant des exigences propres à un contexte d'entreprise : isolation stricte des données par utilisateur, exécution locale du modèle de langage pour préserver la confidentialité, séparation des privilèges administrateur/utilisateur, et amélioration continue de l'expérience utilisateur (réponses en streaming, téléchargement de rapports, limitation du temps de génération).
+
+Plusieurs axes d'amélioration ont été identifiés et pourraient faire l'objet de travaux futurs : l'élargissement du jeu d'évaluation quantitative à un corpus plus large et plus varié, la mise en place de tests automatisés, la conteneurisation de l'application pour faciliter son déploiement, ou encore l'ajout d'une fonctionnalité de récupération de mot de passe en libre-service.
+
+% =========================================================
+% BIBLIOGRAPHIE ET NÉTOGRAPHIE
+% =========================================================
+\chapter*{Bibliographie et Nétographie}
+\addcontentsline{toc}{chapter}{Bibliographie et Nétographie}
+\markboth{Bibliographie et Nétographie}{Bibliographie et Nétographie}
+
+\textbf{Nétographie}
+
+\begin{enumerate}
+  \item FastAPI — Documentation officielle. \url{https://fastapi.tiangolo.com/}
+  \item LangChain — Documentation officielle. \url{https://python.langchain.com/}
+  \item ChromaDB — Documentation officielle. \url{https://docs.trychroma.com/}
+  \item Ollama — Documentation officielle. \url{https://ollama.com/}
+  \item Sentence-Transformers — Documentation du modèle \texttt{all-MiniLM-L6-v2}. \url{https://www.sbert.net/}
+  \item React — Documentation officielle. \url{https://react.dev/}
+  \item SQLAlchemy — Documentation officielle. \url{https://docs.sqlalchemy.org/}
+\end{enumerate}
+
+\note{Compléter avec les éventuels articles, cours ou ouvrages consultés.}
+
+% =========================================================
+% ANNEXES
+% =========================================================
+\appendix
+\chapter{Annexes}
+\note{Facultatif. Peuvent y figurer : extraits de code jugés significatifs, diagrammes UML complémentaires, interfaces graphiques additionnelles.}
+
+\end{document}

@@ -1,0 +1,118 @@
+
+======================================================================
+CONFIGURATION : chunk_size=300, chunk_overlap=20
+======================================================================
+
+--- politique_conges.txt : 5 chunk(s) ---
+
+[chunk 0] (doc_ref: filename=politique_conges.txt, 278 car.)
+Politique de congés — Entreprise Acme
+
+Les employés à temps plein bénéficient de 25 jours de congés payés par an, acquis au
+rythme de 2,08 jours par mois travaillé. Les congés doivent être posés au moins 15 jours
+à l'avance via le portail RH, sauf circonstances exceptionnelles.
+
+[chunk 1] (doc_ref: filename=politique_conges.txt, 183 car.)
+Les jours de congés non pris peuvent être reportés sur l'année suivante dans la limite de
+5 jours. Au-delà, ils sont perdus, sauf accord exprès du responsable des ressources humaines.
+
+[chunk 2] (doc_ref: filename=politique_conges.txt, 156 car.)
+En cas de maladie, l'employé dispose de 10 jours de congé maladie payés par an. Un
+justificatif médical est requis à partir du 3e jour d'absence consécutif.
+
+[chunk 3] (doc_ref: filename=politique_conges.txt, 201 car.)
+Le congé maternité est de 16 semaines, dont 6 semaines avant la date présumée
+d'accouchement. Le congé paternité est de 25 jours calendaires, à prendre dans les
+6 mois suivant la naissance de l'enfant.
+
+[chunk 4] (doc_ref: filename=politique_conges.txt, 144 car.)
+Les jours fériés légaux ne sont pas décomptés des congés payés. La liste des jours
+fériés est publiée chaque année en janvier par le service RH.
+
+--- politique_teletravail.txt : 5 chunk(s) ---
+
+[chunk 0] (doc_ref: filename=politique_teletravail.txt, 256 car.)
+Politique de télétravail — Entreprise Acme
+
+Les employés éligibles peuvent télétravailler jusqu'à 2 jours par semaine, sous réserve
+de l'accord de leur manager direct. Les jours de télétravail doivent être fixes et
+communiqués au début de chaque trimestre.
+
+[chunk 1] (doc_ref: filename=politique_teletravail.txt, 204 car.)
+L'entreprise fournit un ordinateur portable et une indemnité mensuelle de 40 euros pour
+couvrir les frais d'électricité et de connexion internet. Cette indemnité est versée
+avec le salaire de fin de mois.
+
+[chunk 2] (doc_ref: filename=politique_teletravail.txt, 192 car.)
+Les employés en télétravail doivent rester joignables pendant les heures habituelles de
+bureau, soit de 9h à 18h, et participer aux réunions d'équipe en visioconférence avec
+la caméra activée.
+
+[chunk 3] (doc_ref: filename=politique_teletravail.txt, 243 car.)
+Le télétravail complet (5 jours par semaine) n'est autorisé que pour les postes
+explicitement désignés comme "full remote" dans le contrat de travail, ou sur
+dérogation exceptionnelle validée par la direction pour une durée maximale de 3 mois.
+
+[chunk 4] (doc_ref: filename=politique_teletravail.txt, 196 car.)
+En cas de déménagement à l'étranger, l'employé doit prévenir le service RH au moins
+2 mois à l'avance, car le télétravail depuis l'étranger n'est pas autorisé pour des
+raisons fiscales et légales.
+
+TOTAL pour cette configuration : 10 chunks
+
+======================================================================
+CONFIGURATION : chunk_size=500, chunk_overlap=20
+======================================================================
+
+--- politique_conges.txt : 3 chunk(s) ---
+
+[chunk 0] (doc_ref: filename=politique_conges.txt, 463 car.)
+Politique de congés — Entreprise Acme
+
+Les employés à temps plein bénéficient de 25 jours de congés payés par an, acquis au
+rythme de 2,08 jours par mois travaillé. Les congés doivent être posés au moins 15 jours
+à l'avance via le portail RH, sauf circonstances exceptionnelles.
+
+Les jours de congés non pris peuvent être reportés sur l'année suivante dans la limite de
+5 jours. Au-delà, ils sont perdus, sauf accord exprès du responsable des ressources humaines.
+
+[chunk 1] (doc_ref: filename=politique_conges.txt, 359 car.)
+En cas de maladie, l'employé dispose de 10 jours de congé maladie payés par an. Un
+justificatif médical est requis à partir du 3e jour d'absence consécutif.
+
+Le congé maternité est de 16 semaines, dont 6 semaines avant la date présumée
+d'accouchement. Le congé paternité est de 25 jours calendaires, à prendre dans les
+6 mois suivant la naissance de l'enfant.
+
+[chunk 2] (doc_ref: filename=politique_conges.txt, 144 car.)
+Les jours fériés légaux ne sont pas décomptés des congés payés. La liste des jours
+fériés est publiée chaque année en janvier par le service RH.
+
+--- politique_teletravail.txt : 3 chunk(s) ---
+
+[chunk 0] (doc_ref: filename=politique_teletravail.txt, 462 car.)
+Politique de télétravail — Entreprise Acme
+
+Les employés éligibles peuvent télétravailler jusqu'à 2 jours par semaine, sous réserve
+de l'accord de leur manager direct. Les jours de télétravail doivent être fixes et
+communiqués au début de chaque trimestre.
+
+L'entreprise fournit un ordinateur portable et une indemnité mensuelle de 40 euros pour
+couvrir les frais d'électricité et de connexion internet. Cette indemnité est versée
+avec le salaire de fin de mois.
+
+[chunk 1] (doc_ref: filename=politique_teletravail.txt, 437 car.)
+Les employés en télétravail doivent rester joignables pendant les heures habituelles de
+bureau, soit de 9h à 18h, et participer aux réunions d'équipe en visioconférence avec
+la caméra activée.
+
+Le télétravail complet (5 jours par semaine) n'est autorisé que pour les postes
+explicitement désignés comme "full remote" dans le contrat de travail, ou sur
+dérogation exceptionnelle validée par la direction pour une durée maximale de 3 mois.
+
+[chunk 2] (doc_ref: filename=politique_teletravail.txt, 196 car.)
+En cas de déménagement à l'étranger, l'employé doit prévenir le service RH au moins
+2 mois à l'avance, car le télétravail depuis l'étranger n'est pas autorisé pour des
+raisons fiscales et légales.
+
+TOTAL pour cette configuration : 6 chunks

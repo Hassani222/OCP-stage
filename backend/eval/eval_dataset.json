@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "question": "Combien de jours de congés payés par an ?",
+    "expected_answer_contains": ["25 jours"],
+    "expected_source": "politique_conges.txt"
+  },
+  {
+    "id": 2,
+    "question": "Combien de jours de congé maladie payés par an ?",
+    "expected_answer_contains": ["10 jours"],
+    "expected_source": "politique_conges.txt"
+  },
+  {
+    "id": 3,
+    "question": "À partir de quel jour d'absence un justificatif médical est-il requis ?",
+    "expected_answer_contains": ["3e jour", "troisieme jour", "3eme jour"],
+    "expected_source": "politique_conges.txt"
+  },
+  {
+    "id": 4,
+    "question": "Combien de semaines dure le congé maternité ?",
+    "expected_answer_contains": ["16 semaines"],
+    "expected_source": "politique_conges.txt"
+  },
+  {
+    "id": 5,
+    "question": "Combien de jours dure le congé paternité ?",
+    "expected_answer_contains": ["25 jours"],
+    "expected_source": "politique_conges.txt"
+  },
+  {
+    "id": 6,
+    "question": "Combien de jours de télétravail par semaine sont autorisés ?",
+    "expected_answer_contains": ["2 jours"],
+    "expected_source": "politique_teletravail.txt"
+  },
+  {
+    "id": 7,
+    "question": "Quel est le montant de l'indemnité de télétravail ?",
+    "expected_answer_contains": ["40 euros", "40€", "40 €"],
+    "expected_source": "politique_teletravail.txt"
+  },
+  {
+    "id": 8,
+    "question": "Entre quelles heures un télétravailleur doit-il être joignable ?",
+    "expected_answer_contains": ["9h", "18h"],
+    "expected_source": "politique_teletravail.txt"
+  },
+  {
+    "id": 9,
+    "question": "Combien de temps à l'avance faut-il prévenir les RH avant un déménagement à l'étranger ?",
+    "expected_answer_contains": ["2 mois"],
+    "expected_source": "politique_teletravail.txt"
+  },
+  {
+    "id": 10,
+    "question": "Le télétravail est-il autorisé depuis l'étranger ?",
+    "expected_answer_contains": ["pas autorise", "n'est pas autorise", "non autorise", "interdit"],
+    "expected_source": "politique_teletravail.txt"
+  }
+]

@@ -1,0 +1,14 @@
+backend/venv/
+backend/.env
+backend/rag_chatbot.db
+backend/storage/uploads/*
+backend/storage/chroma_db/*
+!backend/storage/uploads/.gitkeep
+!backend/storage/chroma_db/.gitkeep
+__pycache__/
+*.pyc
+
+frontend/node_modules/
+frontend/.env
+frontend/dist/
+.claude/
