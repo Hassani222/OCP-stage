@@ -92,7 +92,7 @@ class AdminTotals(BaseModel):
 
 class AdminUserStat(BaseModel):
     id: int
-    email: EmailStr
+    email: str  # display-only: not EmailStr, so an odd-but-harmless stored value never 500s the dashboard
     is_admin: bool
     created_at: datetime
     document_count: int

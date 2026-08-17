@@ -37,7 +37,7 @@ from app.rag.loaders import load_document
 from app.rag.splitter import split_documents
 from app.rag.vectorstore import add_document_chunks, similarity_search
 
-EVAL_USER_EMAIL = "evaluation-rag@clarte.local"
+EVAL_USER_EMAIL = "evaluation-rag@example.com"  # NOT .local: that TLD fails EmailStr validation and 500s the admin dashboard
 TEST_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "test-data"
 DATASET_PATH = Path(__file__).resolve().parent / "eval_dataset.json"
 REPORT_PATH = TEST_DATA_DIR / "rag-evaluation-report.md"
