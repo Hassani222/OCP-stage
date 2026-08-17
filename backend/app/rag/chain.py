@@ -27,6 +27,9 @@ def get_llm() -> ChatOllama:
         temperature=0.2,
         stop=STOP_SEQUENCES,
         num_predict=100,
+        # Keep the model loaded in memory between requests — Ollama's default is to
+        # unload after 5 min idle, which adds a 1-3 min reload on the next question.
+        keep_alive="30m",
     )
 
 
