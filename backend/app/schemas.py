@@ -114,3 +114,11 @@ class AdminUserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     is_admin: Optional[bool] = None
     password: Optional[str] = None
+
+
+class AdminDocumentOut(BaseModel):
+    id: int
+    filename: str
+    owner_email: str
+    chunk_count: int
+    uploaded_at: datetime

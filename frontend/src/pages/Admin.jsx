@@ -38,8 +38,13 @@ export default function Admin() {
   const [deletingId, setDeletingId] = useState(null)
   const [deleteError, setDeleteError] = useState('')
 
+  const [documents, setDocuments] = useState(null)
+  const [docError, setDocError] = useState('')
+  const [deletingDocId, setDeletingDocId] = useState(null)
+
   useEffect(() => {
     loadDashboard()
+    loadDocuments()
   }, [])
 
   function loadDashboard() {
@@ -47,6 +52,28 @@ export default function Admin() {
       .get('/admin/dashboard')
       .then((res) => setDashboard(res.data))
       .catch((err) => setError(err.response?.data?.detail || 'Impossible de charger le tableau de bord.'))
+  }
+
+  function loadDocuments() {
+    client
+      .get('/admin/documents')
+      .then((res) => setDocuments(res.data))
+      .catch((err) => setDocError(err.response?.data?.detail || 'Impossible de charger les documents.'))
+  }
+
+  async function handleDeleteDocument(doc) {
+    if (!window.confirm(`Supprimer le document « ${doc.filename} » (propriétaire : ${doc.owner_email}) ?`)) return
+    setDeletingDocId(doc.id)
+    setDocError('')
+    try {
+      await client.delete(`/admin/documents/${doc.id}`)
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id))
+      loadDashboard()
+    } catch (err) {
+      setDocError(err.response?.data?.detail || 'Échec de la suppression.')
+    } finally {
+      setDeletingDocId(null)
+    }
   }
 
   async function handleCreate(e) {
@@ -287,6 +314,56 @@ export default function Admin() {
                 </tbody>
               </table>
             </div>
+
+            <div className="admin-section-header">
+              <h2>Documents</h2>
+            </div>
+
+            {docError && <p className="error">{docError}</p>}
+
+            {!docError && !documents && <p className="muted">Chargement…</p>}
+
+            {documents && (
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Fichier</th>
+                      <th>Propriétaire</th>
+                      <th>Segments</th>
+                      <th>Importé le</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.map((doc) => (
+                      <tr key={doc.id}>
+                        <td>{doc.filename}</td>
+                        <td>{doc.owner_email}</td>
+                        <td className="num">{formatNumber(doc.chunk_count)}</td>
+                        <td>{new Date(doc.uploaded_at).toLocaleDateString('fr-FR')}</td>
+                        <td className="admin-actions">
+                          <button
+                            className="link-btn"
+                            onClick={() => handleDeleteDocument(doc)}
+                            disabled={deletingDocId === doc.id}
+                          >
+                            {deletingDocId === doc.id ? 'Suppression…' : 'Supprimer'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {documents.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="muted">
+                          Aucun document importé.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </>
         )}
       </main>

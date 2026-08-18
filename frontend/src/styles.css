@@ -329,6 +329,13 @@ body {
   gap: 0.55rem;
 }
 
+.document-panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .document-panel h3 {
   margin: 0;
   font-size: 0.78rem;
@@ -336,6 +343,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #c7c8ad;
+}
+
+.document-panel-summary {
+  font-size: 0.7rem;
+  color: #a8a98f;
+  white-space: nowrap;
 }
 
 .upload-btn {
@@ -370,12 +383,25 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
-  padding: 0.15rem 0;
+  padding: 0.3rem 0;
 }
 
-.document-list li span {
+.document-list-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.document-list-name {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.document-list-meta {
+  font-size: 0.68rem;
+  color: #a8a98f;
   white-space: nowrap;
 }
 
@@ -1139,6 +1165,92 @@ body {
 .landing-feature-card p {
   margin: 0;
   font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.landing-about {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 2.5rem 4rem;
+  text-align: center;
+}
+
+.landing-about h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.landing-about p {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text-muted);
+  text-align: left;
+}
+
+.landing-about p:last-child {
+  margin-bottom: 0;
+}
+
+.landing-about strong {
+  color: var(--color-text-soft);
+}
+
+.landing-guide {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 2.5rem 4rem;
+}
+
+.landing-guide h2 {
+  margin: 0 0 1.75rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.landing-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.landing-guide-step {
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.landing-guide-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fdfcf7;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.landing-guide-step h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  color: var(--color-text-soft);
+}
+
+.landing-guide-step p {
+  margin: 0;
+  font-size: 0.88rem;
   line-height: 1.5;
   color: var(--color-text-muted);
 }

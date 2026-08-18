@@ -9,6 +9,34 @@ const FEATURES = [
   { icon: '📊', title: 'Tableau de bord', text: "Vue d'ensemble de l'activité pour les administrateurs." },
 ]
 
+const GUIDE_STEPS = [
+  {
+    n: 1,
+    title: 'Créez votre compte',
+    text: "Inscrivez-vous avec votre email professionnel en quelques secondes, sans installation.",
+  },
+  {
+    n: 2,
+    title: 'Importez vos documents',
+    text: 'Ajoutez vos fichiers PDF, DOCX ou TXT (5 Mo max chacun) depuis la barre latérale du chat.',
+  },
+  {
+    n: 3,
+    title: 'Posez votre question',
+    text: 'Écrivez votre question en langage naturel, comme vous le feriez à un collègue.',
+  },
+  {
+    n: 4,
+    title: 'Obtenez une réponse sourcée',
+    text: "L'assistant répond en s'appuyant uniquement sur vos documents, sans jamais inventer.",
+  },
+  {
+    n: 5,
+    title: 'Retrouvez vos échanges',
+    text: "Chaque conversation est sauvegardée : reprenez-la, ou téléchargez-en un rapport.",
+  },
+]
+
 export default function Landing() {
   return (
     <div className="landing-page">
@@ -40,6 +68,29 @@ export default function Landing() {
         </div>
       </main>
 
+      <section className="landing-about">
+        <h2>Le rôle de Clarté</h2>
+        <p>
+          Dans une entreprise, l'information existe presque toujours déjà — dans une politique
+          RH, une procédure, une note de service — mais elle est difficile à retrouver
+          rapidement. Une recherche classique ne fonctionne que si on tape exactement les mots
+          du document, et lire un fichier entier pour trouver une seule réponse fait perdre du
+          temps à tout le monde.
+        </p>
+        <p>
+          Clarté résout ce problème en <strong>comprenant le sens de vos questions</strong>, pas
+          seulement les mots que vous employez. Une intelligence artificielle lit ensuite les
+          passages les plus pertinents et rédige une réponse claire, directement
+          compréhensible. Chaque réponse indique toujours de quel document elle provient, pour
+          que vous puissiez vérifier l'information vous-même.
+        </p>
+        <p>
+          Cette intelligence artificielle fonctionne <strong>entièrement chez vous</strong>, sans
+          passer par un service extérieur : vos documents et vos questions restent toujours en
+          interne, à l'abri.
+        </p>
+      </section>
+
       <section className="landing-features">
         {FEATURES.map((f) => (
           <div key={f.title} className="landing-feature-card">
@@ -48,6 +99,19 @@ export default function Landing() {
             <p>{f.text}</p>
           </div>
         ))}
+      </section>
+
+      <section className="landing-guide">
+        <h2>Guide d'utilisation</h2>
+        <div className="landing-guide-steps">
+          {GUIDE_STEPS.map((step) => (
+            <div key={step.n} className="landing-guide-step">
+              <span className="landing-guide-number">{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <footer className="landing-footer">

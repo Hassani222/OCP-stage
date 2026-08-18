@@ -41,9 +41,19 @@ export default function DocumentUpload({ documents, onUploaded, onDeleted }) {
     onDeleted(id)
   }
 
+  const totalChunks = documents.reduce((sum, doc) => sum + (doc.chunk_count || 0), 0)
+
   return (
     <div className="document-panel">
-      <h3>Documents</h3>
+      <div className="document-panel-header">
+        <h3>Documents</h3>
+        {documents.length > 0 && (
+          <span className="document-panel-summary">
+            {documents.length} document{documents.length > 1 ? 's' : ''} · {totalChunks} segment
+            {totalChunks > 1 ? 's' : ''} indexé{totalChunks > 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
       <label className="upload-btn">
         {uploading ? 'Import en cours…' : 'Importer un document'}
         <input
@@ -59,7 +69,15 @@ export default function DocumentUpload({ documents, onUploaded, onDeleted }) {
       <ul className="document-list">
         {documents.map((doc) => (
           <li key={doc.id}>
-            <span title={doc.filename}>{doc.filename}</span>
+            <div className="document-list-info">
+              <span className="document-list-name" title={doc.filename}>
+                {doc.filename}
+              </span>
+              <span className="document-list-meta">
+                {doc.chunk_count} segment{doc.chunk_count > 1 ? 's' : ''} ·{' '}
+                {new Date(doc.uploaded_at).toLocaleDateString('fr-FR')}
+              </span>
+            </div>
             <button className="link-btn" onClick={() => handleDelete(doc.id)}>
               Supprimer
             </button>

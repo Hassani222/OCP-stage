@@ -47,7 +47,7 @@ npm install
 copy .env.example .env        # cp sur Linux/Mac
 npm run dev
 ```
-→ Application disponible sur **http://localhost:5173**
+→ Application disponible sur **http://localhost:5173/**
 
 ### 5. Vérification
 1. Ouvrir http://localhost:5173, créer un compte.

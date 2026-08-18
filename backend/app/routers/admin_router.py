@@ -9,7 +9,14 @@ from app.database import get_db
 from app.dependencies import require_admin
 from app.models import Conversation, Document, Message, User
 from app.rag.vectorstore import delete_document_chunks
-from app.schemas import AdminDashboard, AdminTotals, AdminUserCreate, AdminUserStat, AdminUserUpdate
+from app.schemas import (
+    AdminDashboard,
+    AdminDocumentOut,
+    AdminTotals,
+    AdminUserCreate,
+    AdminUserStat,
+    AdminUserUpdate,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -144,4 +151,37 @@ def delete_user(
             os.remove(doc.stored_path)
 
     db.delete(user)
+    db.commit()
+
+
+@router.get("/documents", response_model=list[AdminDocumentOut], dependencies=[Depends(require_admin)])
+def list_all_documents(db: Session = Depends(get_db)):
+    rows = (
+        db.query(Document, User.email)
+        .join(User, Document.owner_id == User.id)
+        .order_by(Document.uploaded_at.desc())
+        .all()
+    )
+    return [
+        AdminDocumentOut(
+            id=doc.id,
+            filename=doc.filename,
+            owner_email=owner_email,
+            chunk_count=doc.chunk_count,
+            uploaded_at=doc.uploaded_at,
+        )
+        for doc, owner_email in rows
+    ]
+
+
+@router.delete("/documents/{document_id}", status_code=204, dependencies=[Depends(require_admin)])
+def delete_any_document(document_id: int, db: Session = Depends(get_db)):
+    document = db.query(Document).filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document introuvable")
+
+    delete_document_chunks(document.id)
+    if os.path.exists(document.stored_path):
+        os.remove(document.stored_path)
+    db.delete(document)
     db.commit()
