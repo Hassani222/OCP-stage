@@ -12,6 +12,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{fancyhdr}
+\usepackage{amssymb}
 \usepackage{hyperref}
 \usepackage{enumitem}
 \usepackage{xcolor}
@@ -33,8 +34,8 @@
 
 \title{\textbf{Rapport d'avancement — Clarté}\\[0.3cm]
 \Large Chatbot intelligent RAG pour l'exploitation de documents d'entreprise}
-\author{\note{Prénom NOM}}
-\date{\note{à compléter}}
+\author{\note {HASSANI Safaa}   }
+\date{\note{ 17.08.2026}}
 
 \begin{document}
 
@@ -205,23 +206,7 @@ Question utilisateur
    -> sauvegarde de l'echange dans l'historique
 \end{verbatim}
 
-\textbf{Schéma d'architecture logicielle}
 
-\begin{verbatim}
-+--------------+   REST + streaming HTTP   +-------------------+
-|   Frontend   | ------------------------> |      Backend       |
-| React + Vite | <------------------------ |      FastAPI       |
-+--------------+                            +---------+----------+
-                                                        |
-                    +-----------------------------------+-----------------------------------+
-                    v                                    v                                    v
-          +-------------------+              +----------------------+              +--------------------+
-          | SQLite (SQLAlchemy) |            |  ChromaDB (vecteurs)   |            |  Ollama (Llama 3)    |
-          | utilisateurs,        |            |  embeddings des        |            |  generation de        |
-          | documents,            |            |  segments de           |            |  reponses en local    |
-          | conversations          |            |  documents              |            |                      |
-          +-------------------+              +----------------------+              +--------------------+
-\end{verbatim}
 
 \textbf{Isolation multi-utilisateur} : chaque segment indexé dans ChromaDB porte l'identifiant du propriétaire du document en métadonnée. Toute recherche (recherche autonome ou retrieval pour le chat) applique systématiquement un filtre sur cet identifiant, garantissant qu'un utilisateur ne peut jamais recevoir de résultat provenant des documents d'un autre utilisateur.
 
@@ -285,6 +270,9 @@ Latence moyenne de génération (CPU) & $\approx$ 40 s \\
   \item Conteneurisation (Docker) pour faciliter le déploiement.
   \item Fonctionnalité de récupération de mot de passe en libre-service.
 \end{itemize}
+
+\vspace{0.5cm}
+
 
 \vspace{0.5cm}
 \noindent\textit{Les prérequis techniques et le mode opératoire détaillé de déploiement font l'objet d'un document séparé : \texttt{GUIDE-DEPLOIEMENT.md}.}
