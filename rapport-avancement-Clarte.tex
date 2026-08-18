@@ -17,6 +17,8 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{caption}
 
 \definecolor{clartegreen}{RGB}{85,86,63}
 
@@ -184,28 +186,19 @@ Frontend & React (Vite) & Écosystème mature, rendu réactif adapté à l'affic
 \section{Conception}
 
 \subsection{Architecture RAG}
-Le pipeline RAG se déroule en deux phases distinctes.
+Le pipeline RAG se déroule en deux phases distinctes, qui ne se rejoignent qu'à un seul
+endroit : ChromaDB. L'indexation y écrit (haut vers bas sur la figure~\ref{fig:archi-rag}),
+la question/réponse y lit (bas vers haut), filtrée par l'identifiant du propriétaire
+(\texttt{owner\_id}) — c'est ce filtre qui garantit qu'aucun document d'un autre utilisateur
+n'apparaît jamais dans une réponse.
 
-\textbf{Phase d'indexation (à l'import d'un document)}
-\begin{verbatim}
-Document (PDF/DOCX/TXT)
-   -> extraction du texte
-   -> decoupage en segments (chunks)
-   -> generation des embeddings (Sentence-Transformers)
-   -> stockage dans ChromaDB (metadonnees : proprietaire, document d'origine)
-\end{verbatim}
-
-\textbf{Phase de question/réponse (à chaque question posée)}
-\begin{verbatim}
-Question utilisateur
-   -> embedding de la question
-   -> recherche des k segments les plus proches dans ChromaDB (filtres par proprietaire)
-   -> construction du contexte (segments + question)
-   -> generation de la reponse par le LLM (Ollama / Llama 3), en flux (streaming)
-   -> reponse affichee progressivement, sources deja connues et affichees immediatement
-   -> sauvegarde de l'echange dans l'historique
-\end{verbatim}
-
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/architecture-rag.png}
+\caption{Pipeline RAG de Clarté : indexation d'un document (haut) et génération d'une
+réponse (bas), reliées par ChromaDB avec isolation par utilisateur.}
+\label{fig:archi-rag}
+\end{figure}
 
 
 \textbf{Isolation multi-utilisateur} : chaque segment indexé dans ChromaDB porte l'identifiant du propriétaire du document en métadonnée. Toute recherche (recherche autonome ou retrieval pour le chat) applique systématiquement un filtre sur cet identifiant, garantissant qu'un utilisateur ne peut jamais recevoir de résultat provenant des documents d'un autre utilisateur.
