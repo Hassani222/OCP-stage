@@ -26,3 +26,10 @@ def run_lightweight_migrations():
     if "is_admin" not in columns:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"))
+
+    new_text_columns = ["first_name", "last_name", "phone", "address", "company_name", "job_title"]
+    missing = [name for name in new_text_columns if name not in columns]
+    if missing:
+        with engine.begin() as conn:
+            for name in missing:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} VARCHAR"))

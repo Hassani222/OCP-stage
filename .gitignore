@@ -1,6 +1,8 @@
 backend/venv/
 backend/.env
 backend/rag_chatbot.db
+backend/uvicorn.out.log
+backend/uvicorn.err.log
 backend/storage/uploads/*
 backend/storage/chroma_db/*
 !backend/storage/uploads/.gitkeep

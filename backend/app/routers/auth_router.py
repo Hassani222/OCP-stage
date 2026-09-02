@@ -18,7 +18,16 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email")
 
-    user = User(email=payload.email, hashed_password=hash_password(payload.password))
+    user = User(
+        email=payload.email,
+        hashed_password=hash_password(payload.password),
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        phone=payload.phone,
+        address=payload.address,
+        company_name=payload.company_name,
+        job_title=payload.job_title,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)

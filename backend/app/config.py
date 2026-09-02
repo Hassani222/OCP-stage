@@ -10,9 +10,9 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3"
-    chunk_size: int = 1000
-    chunk_overlap: int = 150
-    retrieval_k: int = 4
+    chunk_size: int = 700
+    chunk_overlap: int = 100
+    retrieval_k: int = 2
     admin_emails: str = ""
     max_upload_size_mb: int = 5
 

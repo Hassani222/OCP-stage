@@ -30,6 +30,13 @@ def get_llm() -> ChatOllama:
         # Keep the model loaded in memory between requests — Ollama's default is to
         # unload after 5 min idle, which adds a 1-3 min reload on the next question.
         keep_alive="30m",
+        # Pin inference to the physical core count (this machine: 6c/12t). On CPU-only
+        # llama.cpp inference, hyperthreads rarely speed up matmul-heavy work and can
+        # even add scheduling overhead, so num_thread=6 tends to beat the auto default.
+        num_thread=6,
+        # Shrink the context window to match the now-smaller retrieved context
+        # (retrieval_k=2, chunk_size=700) — less state for Ollama to allocate/scan per call.
+        num_ctx=2048,
     )
 
 

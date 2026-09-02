@@ -134,6 +134,20 @@ body {
   letter-spacing: -0.01em;
 }
 
+.auth-card-wide {
+  width: 460px;
+}
+
+.auth-card-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.auth-card-row input {
+  flex: 1;
+  min-width: 0;
+}
+
 .auth-card input {
   padding: 0.7rem 0.85rem;
   border: 1px solid #d9dac8;

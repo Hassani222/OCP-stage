@@ -228,6 +228,7 @@ export default function Admin() {
                 <thead>
                   <tr>
                     <th>Email</th>
+                    <th>Nom / Société</th>
                     <th>Rôle</th>
                     <th>Documents</th>
                     <th>Conversations</th>
@@ -253,6 +254,11 @@ export default function Admin() {
                         ) : (
                           <td>{u.email}</td>
                         )}
+
+                        <td>
+                          {u.first_name || u.last_name ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : '—'}
+                          {u.company_name && <span className="muted"> · {u.company_name}</span>}
+                        </td>
 
                         {isEditing ? (
                           <td>

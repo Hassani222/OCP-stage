@@ -34,9 +34,9 @@ export function AuthProvider({ children }) {
     setToken(res.data.access_token)
   }
 
-  async function register(email, password) {
-    await client.post('/auth/register', { email, password })
-    await login(email, password)
+  async function register(payload) {
+    await client.post('/auth/register', payload)
+    await login(payload.email, payload.password)
   }
 
   function logout() {
