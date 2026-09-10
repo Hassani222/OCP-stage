@@ -58,5 +58,19 @@
     "question": "Le télétravail est-il autorisé depuis l'étranger ?",
     "expected_answer_contains": ["pas autorise", "n'est pas autorise", "non autorise", "interdit"],
     "expected_source": "politique_teletravail.txt"
+  },
+  {
+    "id": 11,
+    "question": "Quel est le nombre de jours de congés payés pour les salariés à temps partiel ?",
+    "expect_abstention": true,
+    "expected_source": "politique_conges.txt",
+    "expected_sources": []
+  },
+  {
+    "id": 12,
+    "question": "Quelle assurance santé est fournie aux employés en télétravail ?",
+    "expect_abstention": true,
+    "expected_source": "politique_teletravail.txt",
+    "expected_sources": []
   }
 ]

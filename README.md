@@ -76,6 +76,28 @@ Question utilisateur → recherche sémantique (top-k, filtrée par utilisateur)
 contexte + question → LLM (Ollama) → réponse + sources affichées
 ```
 
+## Chapitre 4 — Évaluation des résultats
+
+L'instruction envoyée au modèle lui demande de répondre uniquement à partir des
+passages récupérés ; elle ne suffit pas à garantir l'absence d'extrapolation.
+Le jeu d'évaluation inclut donc des questions factuelles et des questions hors
+corpus, pour lesquelles l'assistant doit explicitement indiquer que les
+documents ne donnent pas l'information.
+
+Depuis `backend/`, lancez :
+
+```bash
+python eval/run_evaluation.py
+```
+
+Le rapport `test-data/rag-evaluation-report.md` distingue :
+
+- la qualité du retrieval : Hit Rate@k et MRR ;
+- la fidélité : fait attendu étayé ou refus explicite pour une question hors
+  corpus ;
+- l’exactitude des citations : précision, rappel et correspondance exacte des
+  fichiers cités (sans source manquante ni superflue).
+
 ## Structure du projet
 
 ```

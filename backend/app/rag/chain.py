@@ -1,14 +1,12 @@
+from functools import lru_cache
+
 from langchain_ollama import ChatOllama
 
 from app.config import settings
 from app.rag.vectorstore import similarity_search
 
-SYSTEM_PROMPT = """Tu es un assistant d'entreprise qui répond aux questions en te basant \
-UNIQUEMENT sur le contexte fourni ci-dessous, extrait des documents internes de l'entreprise. \
-Si la réponse ne se trouve pas dans le contexte, dis clairement que tu ne disposes pas de \
-cette information dans les documents. Ne fabrique pas de réponse. Réponds dans la langue de \
-la question. Donne une seule réponse, concise et directe, à la question posée. N'invente \
-pas d'autres questions et ne poursuis pas la conversation au-delà de cette unique réponse.
+SYSTEM_PROMPT = """Réponds uniquement à partir du contexte. Si l'information manque, dis-le.
+Réponds dans la langue de la question, en une phrase concise. N'ajoute aucune information.
 
 Contexte :
 {context}
@@ -20,16 +18,17 @@ STOP_SEQUENCES = [
 ]
 
 
+@lru_cache
 def get_llm() -> ChatOllama:
     return ChatOllama(
         base_url=settings.ollama_base_url,
         model=settings.ollama_model,
         temperature=0.2,
         stop=STOP_SEQUENCES,
-        num_predict=100,
+        num_predict=settings.ollama_num_predict,
         # Keep the model loaded in memory between requests — Ollama's default is to
         # unload after 5 min idle, which adds a 1-3 min reload on the next question.
-        keep_alive="30m",
+        keep_alive=settings.ollama_keep_alive,
         # Pin inference to the physical core count (this machine: 6c/12t). On CPU-only
         # llama.cpp inference, hyperthreads rarely speed up matmul-heavy work and can
         # even add scheduling overhead, so num_thread=6 tends to beat the auto default.

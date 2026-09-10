@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     chunk_size: int = 700
     chunk_overlap: int = 100
     retrieval_k: int = 2
+    ollama_num_predict: int = 60
+    ollama_keep_alive: str = "30m"
     admin_emails: str = ""
     max_upload_size_mb: int = 5
 

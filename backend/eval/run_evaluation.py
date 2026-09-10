@@ -4,8 +4,9 @@
 Mesure :
 - Qualité du retrieval : Hit Rate@k (le bon document est-il dans les k passages
   récupérés ?) et MRR (Mean Reciprocal Rank).
-- Fidélité des réponses : la réponse générée par le LLM contient-elle bien le
-  fait attendu, et les sources citées sont-elles correctes ?
+- Fidélité des réponses : le fait attendu est-il présent, sans ajout interdit ?
+  Les questions sans réponse dans le corpus doivent aussi déclencher un refus
+  explicite plutôt qu'une extrapolation.
 
 Le script utilise le pipeline réel de l'application (embeddings, ChromaDB,
 Ollama) sur un compte d'évaluation dédié, pas une simulation.
@@ -47,6 +48,54 @@ TEST_DOCUMENTS = ["politique_conges.txt", "politique_teletravail.txt"]
 def normalize(text: str) -> str:
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
     return text.lower()
+
+
+ABSTENTION_MARKERS = (
+    "ne dispose pas", "pas d'information", "aucune information",
+    "non mentionn", "pas mentionn", "ne precis", "pas precis",
+    "pas indique", "n'est pas indique",
+    "n'ai pas trouv", "n'avons pas trouv", "n'a pas trouv",
+    "ne permet pas de répondre", "impossible de répondre",
+)
+
+
+def evaluates_as_abstention(answer: str) -> bool:
+    """Return whether an answer clearly declines an unsupported question.
+
+    This deliberately checks a small, auditable set of French formulations. It
+    keeps the fidelity suite deterministic rather than asking a second LLM to
+    judge the first one's output.
+    """
+    normalized = normalize(answer)
+    return any(normalize(marker) in normalized for marker in ABSTENTION_MARKERS)
+
+
+def evaluate_faithfulness(item: dict, answer: str) -> tuple[bool, str]:
+    """Evaluate the dataset's explicit grounding contract for one answer."""
+    answer_norm = normalize(answer)
+
+    if item.get("expect_abstention"):
+        return (
+            evaluates_as_abstention(answer),
+            "refus attendu" if evaluates_as_abstention(answer) else "réponse non fondée à une question hors corpus",
+        )
+
+    expected_present = any(
+        normalize(keyword) in answer_norm
+        for keyword in item["expected_answer_contains"]
+    )
+    forbidden_present = next(
+        (
+            phrase for phrase in item.get("forbidden_answer_contains", [])
+            if normalize(phrase) in answer_norm
+        ),
+        None,
+    )
+    if forbidden_present:
+        return False, f"extrapolation interdite détectée : {forbidden_present}"
+    if not expected_present:
+        return False, "fait attendu absent"
+    return True, "fait étayé par le jeu de test"
 
 
 def get_or_create_eval_user(db) -> User:
@@ -100,24 +149,34 @@ def evaluate_generation(user: User, retrieval_results: list[dict]) -> list[dict]
         result = answer_question(item["question"], owner_id=user.id)
         elapsed = time.time() - start
 
-        answer_norm = normalize(result["answer"])
-        answer_correct = any(normalize(kw) in answer_norm for kw in item["expected_answer_contains"])
+        answer_correct, faithfulness_reason = evaluate_faithfulness(item, result["answer"])
 
-        cited_sources = [s["filename"] for s in result["sources"]]
-        source_correct = item["expected_source"] in cited_sources
+        # Sources are presentation citations. Deduplicate chunks from the same
+        # file before judging them: a file may legitimately yield several chunks.
+        cited_sources = list(dict.fromkeys(s["filename"] for s in result["sources"]))
+        expected_sources = set(item.get("expected_sources", [item["expected_source"]]))
+        cited_set = set(cited_sources)
+        correct_citations = cited_set & expected_sources
+        citation_precision = len(correct_citations) / len(cited_set) if cited_set else 0.0
+        citation_recall = len(correct_citations) / len(expected_sources) if expected_sources else 1.0
+        citation_exact = cited_set == expected_sources
 
         results.append(
             {
                 **item,
                 "answer": result["answer"],
                 "answer_correct": answer_correct,
+                "faithfulness_reason": faithfulness_reason,
                 "cited_sources": cited_sources,
-                "source_correct": source_correct,
+                "expected_sources": sorted(expected_sources),
+                "citation_precision": citation_precision,
+                "citation_recall": citation_recall,
+                "citation_exact": citation_exact,
                 "latency_seconds": round(elapsed, 1),
             }
         )
         status = "OK" if answer_correct else "ECHEC"
-        print(f"  [{item['id']:>2}] {status:5s} ({elapsed:5.1f}s)  {item['question']}")
+        print(f"  [{item['id']:>2}] {status:5s} ({elapsed:5.1f}s)  {item['question']} — {faithfulness_reason}")
     return results
 
 
@@ -159,7 +218,10 @@ def build_report(retrieval_results, generation_results, retrieval_only: bool) ->
     if not retrieval_only:
         n_gen = len(generation_results)
         answer_correct_count = sum(1 for r in generation_results if r["answer_correct"])
-        source_correct_count = sum(1 for r in generation_results if r["source_correct"])
+        faithfulness_failures = [r for r in generation_results if not r["answer_correct"]]
+        exact_citation_count = sum(1 for r in generation_results if r["citation_exact"])
+        citation_precision = sum(r["citation_precision"] for r in generation_results) / n_gen
+        citation_recall = sum(r["citation_recall"] for r in generation_results) / n_gen
         avg_latency = sum(r["latency_seconds"] for r in generation_results) / n_gen
 
         lines += [
@@ -168,12 +230,15 @@ def build_report(retrieval_results, generation_results, retrieval_only: bool) ->
             "",
             "| Métrique | Valeur |",
             "|---|---|",
-            f"| Exactitude des réponses (fait attendu présent) | {answer_correct_count / n_gen:.0%} ({answer_correct_count}/{n_gen}) |",
-            f"| Sources citées correctes | {source_correct_count / n_gen:.0%} ({source_correct_count}/{n_gen}) |",
+            f"| Fidélité (fait étayé ou refus hors corpus) | {answer_correct_count / n_gen:.0%} ({answer_correct_count}/{n_gen}) |",
+            f"| Réponses non fidèles détectées | {len(faithfulness_failures)} |",
+            f"| Précision des citations | {citation_precision:.0%} |",
+            f"| Rappel des citations | {citation_recall:.0%} |",
+            f"| Citations exactes (aucune source en trop ou manquante) | {exact_citation_count / n_gen:.0%} ({exact_citation_count}/{n_gen}) |",
             f"| Latence moyenne de génération | {avg_latency:.1f} s |",
             "",
-            "| # | Question | Réponse générée | Correcte ? | Sources correctes ? | Latence |",
-            "|---|---|---|---|---|---|",
+            "| # | Question | Réponse générée | Fidèle ? | Contrôle | Citations (P/R/exact) | Latence |",
+            "|---|---|---|---|---|---|---|",
         ]
         for r in generation_results:
             answer_short = r["answer"].replace("\n", " ")
@@ -181,9 +246,19 @@ def build_report(retrieval_results, generation_results, retrieval_only: bool) ->
                 answer_short = answer_short[:100] + "…"
             lines.append(
                 f"| {r['id']} | {r['question']} | {answer_short} | "
-                f"{'✅' if r['answer_correct'] else '❌'} | {'✅' if r['source_correct'] else '❌'} | "
+                f"{'✅' if r['answer_correct'] else '❌'} | {r['faithfulness_reason']} | "
+                f"{r['citation_precision']:.0%}/{r['citation_recall']:.0%}/"
+                f"{'✅' if r['citation_exact'] else '❌'} | "
                 f"{r['latency_seconds']}s |"
             )
+
+        citation_mismatches = [r for r in generation_results if not r["citation_exact"]]
+        if citation_mismatches:
+            lines += ["", "### Écarts de citation à corriger", ""]
+            for r in citation_mismatches:
+                expected = ", ".join(r["expected_sources"]) or "aucune source"
+                cited = ", ".join(r["cited_sources"]) or "aucune source"
+                lines.append(f"- Question {r['id']} — attendu : {expected} ; cité : {cited}.")
 
     lines.append("")
     return "\n".join(lines)

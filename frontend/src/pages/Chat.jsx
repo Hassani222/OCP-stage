@@ -13,6 +13,8 @@ export default function Chat() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
+  const pendingTextRef = useRef('')
+  const frameRef = useRef(null)
 
   useEffect(() => {
     loadConversations()
@@ -59,6 +61,18 @@ export default function Chat() {
     })
   }
 
+  function flushStreamText() {
+    frameRef.current = null
+    const text = pendingTextRef.current
+    pendingTextRef.current = ''
+    if (text) updateLastMessage((last) => ({ ...last, content: last.content + text }))
+  }
+
+  function appendStreamText(text) {
+    pendingTextRef.current += text
+    if (!frameRef.current) frameRef.current = requestAnimationFrame(flushStreamText)
+  }
+
   async function handleSend(e) {
     e.preventDefault()
     const question = input.trim()
@@ -66,6 +80,7 @@ export default function Chat() {
 
     setInput('')
     setSending(true)
+    pendingTextRef.current = ''
     setMessages((prev) => [...prev, { role: 'user', content: question }])
     setMessages((prev) => [...prev, { role: 'assistant', content: '', sources: [], streaming: true }])
 
@@ -98,11 +113,15 @@ export default function Chat() {
         const { done, value } = await reader.read()
         if (done) break
         const chunk = decoder.decode(value, { stream: true })
-        updateLastMessage((last) => ({ ...last, content: last.content + chunk }))
+        appendStreamText(chunk)
       }
 
+      if (frameRef.current) cancelAnimationFrame(frameRef.current)
+      flushStreamText()
       updateLastMessage({ sources, streaming: false })
     } catch (err) {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current)
+      flushStreamText()
       updateLastMessage({ content: err.message || "Une erreur s'est produite.", streaming: false })
     } finally {
       setSending(false)
